@@ -4,3 +4,6 @@ main.build/
 main.exe
 main.cmd
 YQroute.txt
+build/
+dist/
+*.spec

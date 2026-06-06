@@ -1,16 +1,17 @@
 import tools.utils as utils
+from tools.paths import app_path
 
 
 # connect to the device and mount DevelopDiskImage
 def connect() -> int:
     import os
     import sys
-    from main import seperator
-    from main import OS
     from tools.config import config
 
+    OS = utils.OS
+    seperator = utils.seperator
     if OS != "win":
-        os.system("chmod -R +rx " + config.libimobiledeviceDir)
+        os.system("chmod -R +rx " + str(app_path(config.libimobiledeviceDir)))
         if OS == "linux":
             path = os.environ["PATH"].split(":")
             check = False
@@ -50,12 +51,12 @@ def connect() -> int:
             input("现在按回车退出")
             sys.exit()
     
-    imageStatus = os.path.exists("{}/{}/DeveloperDiskImage.dmg".format(config.imageDir, version)) and\
-                  os.path.exists("{}/{}/DeveloperDiskImage.dmg.signature".format(config.imageDir, version))
+    imageStatus = os.path.exists(app_path(config.imageDir, version, "DeveloperDiskImage.dmg")) and\
+                  os.path.exists(app_path(config.imageDir, version, "DeveloperDiskImage.dmg.signature"))
     if not imageStatus:
         version = ".".join(version.split(".")[0:2])
-        imageStatus = os.path.exists("{}/{}/DeveloperDiskImage.dmg".format(config.imageDir, version)) and\
-                    os.path.exists("{}/{}/DeveloperDiskImage.dmg.signature".format(config.imageDir, version))
+        imageStatus = os.path.exists(app_path(config.imageDir, version, "DeveloperDiskImage.dmg")) and\
+                    os.path.exists(app_path(config.imageDir, version, "DeveloperDiskImage.dmg.signature"))
 
     if not imageStatus:
         print("没有在 {} 下找到 {} 版本的开发者镜像".format(config.imageDir, version))
@@ -65,8 +66,8 @@ def connect() -> int:
 
     imageCMD = [
         "ideviceimagemounter",
-        "{}{}{}{}DeveloperDiskImage.dmg".format(config.imageDir, seperator, version, seperator),
-        "{}{}{}{}DeveloperDiskImage.dmg.signature".format(config.imageDir, seperator, version, seperator),
+        str(app_path(config.imageDir, version, "DeveloperDiskImage.dmg")),
+        str(app_path(config.imageDir, version, "DeveloperDiskImage.dmg.signature")),
     ]
     if -1 != utils.cmd(imageCMD).find("-3"):
         print("开发者镜像签名验证失败，你要重新下一遍")
@@ -78,6 +79,6 @@ def connect() -> int:
 def init():
     import tools.parseRoute as parseRoute
     from tools.config import config
-    with open(config.routeConfig) as myFile:
+    with open(app_path(config.routeConfig)) as myFile:
         loc = parseRoute.split(myFile.read())
     return loc

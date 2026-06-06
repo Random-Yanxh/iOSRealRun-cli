@@ -128,7 +128,7 @@ def fixLockT(loc: list, v, dt):
             t += dt
     return fixedLoc
 
-def run1(loc: list, v, dt=0.2):
+def run1(loc: list, v, dt=0.2, stop_event=None):
     import time
     import tools.utils as utils
     import random
@@ -138,16 +138,25 @@ def run1(loc: list, v, dt=0.2):
     fixedLoc = randLoc(fixedLoc, n=n)  # a path will be divided into n parts for random route
     clock = time.time()
     for i in fixedLoc:
+        if stop_event and stop_event.is_set():
+            return
         utils.setLoc(bd09Towgs84(i))
         while time.time()-clock < dt:
-            pass
+            if stop_event and stop_event.is_set():
+                return
+            time.sleep(0.01)
         clock = time.time()
 
-def run(loc: list, v, d=15):
+def run(loc: list, v, d=15, stop_event=None, log_callback=None):
     import random
     import time
     random.seed(time.time())
-    while True:
+    while not (stop_event and stop_event.is_set()):
         vRand = 1000/(1000/v-(2*random.random()-1)*d)
-        run1(loc, vRand)
-        print("跑完一圈了")
+        run1(loc, vRand, stop_event=stop_event)
+        if stop_event and stop_event.is_set():
+            break
+        if log_callback:
+            log_callback("跑完一圈了")
+        else:
+            print("跑完一圈了")

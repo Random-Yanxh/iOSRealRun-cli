@@ -10,10 +10,13 @@ import tools.utils as utils
 import tools.run as run
 from tools.initialize import connect, init
 from tools.config import config
+from tools.paths import app_path, chdir_app_dir
 
-if not os.path.exists("./log"):
-    os.mkdir("./log")
-sys.stderr=open("./log/error.log", "w")  # redirect error message
+chdir_app_dir()
+
+if not os.path.exists(app_path("log")):
+    os.mkdir(app_path("log"))
+sys.stderr=open(app_path("log", "error.log"), "w")  # redirect error message
 
 
 OS = utils.getOS()  # get the OS, possible values: win, darwin, linux

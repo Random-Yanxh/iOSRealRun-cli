@@ -2,21 +2,8 @@
 utils.py
 """
 
-# execute a command and return the output
-def cmd(i_cmd, getoutp=True, libimobiledevice=True):
-    from main import seperator
-    from main import libimobiledeviceDir
-    from main import OS, env
-    import subprocess
-    if libimobiledevice:
-        if type(i_cmd) == str:
-            i_cmd = seperator.join([libimobiledeviceDir, i_cmd])
-        else:
-            i_cmd[0] = seperator.join([libimobiledeviceDir, i_cmd[0]])
-    if getoutp:
-        return subprocess.Popen(i_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env[OS]).stdout.read().decode("utf-8")
-    else:
-        subprocess.run(i_cmd, env=env[OS])
+import os
+from tools.paths import app_path
 
 
 # get the OS
@@ -29,6 +16,40 @@ def getOS():
         return "darwin"
     else:
         return "linux"
+
+
+OS = getOS()
+seperator = {"win": "\\", "darwin": "/", "linux": "/"}[OS]
+
+
+def getLibimobiledeviceDir():
+    from tools.config import config
+    return config.libimobiledeviceDir + seperator + OS
+
+
+def getEnv():
+    libimobiledeviceDir = getLibimobiledeviceDir()
+    env = {
+        "win": None,
+        "darwin": {"DYLD_LIBRARY_PATH": str(app_path(libimobiledeviceDir))},
+        "linux": {"LD_LIBRARY_PATH": str(app_path(libimobiledeviceDir))}
+    }
+    return env[OS]
+
+
+# execute a command and return the output
+def cmd(i_cmd, getoutp=True, libimobiledevice=True):
+    import subprocess
+    libimobiledeviceDir = getLibimobiledeviceDir()
+    if libimobiledevice:
+        if type(i_cmd) == str:
+            i_cmd = str(app_path(libimobiledeviceDir, i_cmd))
+        else:
+            i_cmd[0] = str(app_path(libimobiledeviceDir, i_cmd[0]))
+    if getoutp:
+        return subprocess.Popen(i_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=getEnv()).stdout.read().decode("utf-8")
+    else:
+        subprocess.run(i_cmd, env=getEnv())
 
 # pair the device
 def pair() -> int:
