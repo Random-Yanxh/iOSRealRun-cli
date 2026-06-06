@@ -46,10 +46,28 @@ def cmd(i_cmd, getoutp=True, libimobiledevice=True):
             i_cmd = str(app_path(libimobiledeviceDir, i_cmd))
         else:
             i_cmd[0] = str(app_path(libimobiledeviceDir, i_cmd[0]))
+    startupinfo = None
+    creationflags = 0
+    if OS == "win":
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        creationflags = subprocess.CREATE_NO_WINDOW
     if getoutp:
-        return subprocess.Popen(i_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=getEnv()).stdout.read().decode("utf-8")
+        return subprocess.Popen(
+            i_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=getEnv(),
+            startupinfo=startupinfo,
+            creationflags=creationflags,
+        ).stdout.read().decode("utf-8")
     else:
-        subprocess.run(i_cmd, env=getEnv())
+        subprocess.run(
+            i_cmd,
+            env=getEnv(),
+            startupinfo=startupinfo,
+            creationflags=creationflags,
+        )
 
 # pair the device
 def pair() -> int:
